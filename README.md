@@ -43,7 +43,7 @@ The retained evidence includes a **5.69 MB vulnerable capture** and a **1.41 MB 
 | `CVE-2026-123633` | HTTP/2 with upstream proxying | UAF and stock worker crash reproduced; no unified RCE adapter. |
 | `CVE-2026-123634` | Runtime DNS resolution with subrequests | ASAN UAF and custom-debug crashes; no stock-image crash or unified RCE adapter. |
 | `CVE-2026-121810` | HTTP/3 with upstream proxying | Not reproduced. |
-| `CVE-2026-113425` | Mail proxy with `auth_http` | UAF and pristine worker crash reproduced; no unified RCE adapter. |
+| `CVE-2026-113425` | Mail proxy with `auth_http` | Command execution confirmed from retained artifacts on nginx 1.31.8 (three runs) and 1.31.7 (one run), with patched 1.31.9 negative control. Not independently replayed. |
 
 A worker crash, sanitizer report, allocation reuse, or client dispatch message is not command execution. RCE requires an independently created marker and a patched negative control.
 
