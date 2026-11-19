@@ -225,6 +225,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--output", type=Path, help="Write structured JSON evidence")
     parser.add_argument(
+        "--versions",
+        default="1.31.8,1.31.9",
+        help="Comma-separated vulnerable/patched pairs: 1.31.6,1.31.7,1.31.8,1.31.9",
+    )
+    parser.add_argument(
         "--command-timeout",
         type=int,
         default=45,
@@ -266,7 +271,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     if args.docker:
         return docker_differential(
-            args.output, args.command_timeout, args.client_timeout
+            args.output, args.command_timeout, args.client_timeout, args.versions
         )
     host, port = args.host, args.port
     address = ipaddress.ip_address(host)
@@ -423,6 +428,7 @@ def docker_differential(
     output: Path | None = None,
     command_timeout: int = 45,
     client_timeout: int = 45,
+    versions: str = "1.31.8,1.31.9",
 ) -> int:
     """Run a bounded, isolated h2c differential and optionally save JSON evidence."""
     label = "io.censys.research.nginx2root-compact"
@@ -439,9 +445,23 @@ def docker_differential(
     )
     evidence = RunEvidence(
         timeout_seconds=client_timeout,
+        target_images=tuple(f"nginx:{version}" for version in versions.split(",")),
         script_sha256=sha256_file(Path(__file__)),
         started_at=datetime.now(timezone.utc).isoformat(),
     )
+    selected_versions = tuple(versions.split(","))
+    if selected_versions != (
+        "1.31.6",
+        "1.31.7",
+        "1.31.8",
+        "1.31.9",
+    ) and selected_versions != (
+        "1.31.8",
+        "1.31.9",
+    ):
+        raise ValueError(
+            "versions must be 1.31.8,1.31.9 or 1.31.6,1.31.7,1.31.8,1.31.9"
+        )
     targets: list[TargetEvidence] = []
     passed = False
     exit_code = 2
@@ -464,7 +484,9 @@ def docker_differential(
         docker(
             "network", "create", "--internal", "--label", f"{label}={run_id}", network
         )
-        for version, expected in (("1.31.8", 0), ("1.31.9", 1)):
+        for version, expected in tuple(
+            (version, 0 if version != "1.31.9" else 1) for version in selected_versions
+        ):
             name = f"nginx2root-compact-{version}-{run_id}"
             target = TargetEvidence(
                 image=f"nginx:{version}", version=version, expected_exit=expected
@@ -608,6 +630,7 @@ def docker_differential(
         if output is not None:
             record = RunEvidence(
                 timeout_seconds=client_timeout,
+                target_images=evidence.target_images,
                 script_sha256=evidence.script_sha256,
                 started_at=evidence.started_at,
                 targets=tuple(targets),

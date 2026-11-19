@@ -8,7 +8,7 @@ See the [vulnerable-versus-patched diagram](../docs/CVE-2026-123007-ATTACK-CHAIN
 
 ## Run the complete differential
 
-Requirements: Docker with `nginx:1.31.8` and `nginx:1.31.9` images, and Python 3.10 or newer. Use a disposable lab you own.
+Requirements: Docker with `nginx:1.31.6`, `nginx:1.31.7`, `nginx:1.31.8`, and `nginx:1.31.9` images, and Python 3.10 or newer. Use a disposable lab you own. The default `--versions 1.31.8,1.31.9` pair requires only those two images.
 
 ```sh
 uv run python -I h2c_flow_control_test.py \
@@ -30,6 +30,20 @@ PASS: vulnerable h2c accepted over-credit; patched control rejected it
 ```
 
 The command exits zero only when vulnerable 1.31.8 accepts the one-byte update and returns `POC-SYNC` PING acknowledgment, while patched 1.31.9 rejects the earlier 4 MiB update and closes before the probe.
+
+## Expanded version matrix
+
+The compact accounting differential has been verified on **1.31.6, 1.31.7, and 1.31.8**, with **1.31.9** as the rejecting patched control. Run all four:
+
+```sh
+uv run python -I h2c_flow_control_test.py \
+  --docker \
+  --versions 1.31.6,1.31.7,1.31.8,1.31.9 \
+  --output /tmp/nginx2root-compact-matrix-evidence.json \
+  --acknowledge-local-lab I-AUTHORIZE-LOCAL-LAB
+```
+
+This expands the version coverage of the compact test only. It does not establish RCE compatibility on those versions. Full RCE is separately verified on 1.31.6 and 1.31.8 with Rapid7's matched profiles; 1.31.7 RCE remains unverified.
 
 ## What the client does
 
