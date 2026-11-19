@@ -35,11 +35,28 @@ It does **not** corrupt memory, reclaim objects, install callbacks, execute comm
 
 The retained evidence includes a **5.69 MB vulnerable capture** and a **1.41 MB patched capture**. They contain private lab addresses and stock nginx content, with no personal information or credentials.
 
-## Results
+## Compatibility matrix
+
+### Compact accounting PoC
+
+| Version | Native x86-64 | Native arm64 | Configuration | Result |
+| --- | --- | --- | --- | --- |
+| 1.30.0–1.30.6 | Verified | Verified on 1.30.0 and 1.30.6 | h2c, one worker | Accounting error confirmed |
+| 1.31.0–1.31.5 | Verified | Verified on 1.31.0 and 1.31.5 | h2c, one worker | Accounting error confirmed |
+| 1.31.6 | Verified | Verified | h2c, one worker | Accounting error confirmed; full RCE separately verified |
+| 1.31.7 | Verified | Verified | h2c, one worker | Accounting error confirmed; full RCE unverified |
+| 1.31.8 | Verified | Verified | h2c, one worker | Accounting error confirmed; full RCE separately verified |
+| 1.31.9 | Rejects probe | Rejects probe | Patched control | No accounting proof |
+
+Additional native x86-64 coverage: one, two, and four workers; fresh, 40-request, and 200-request heap states; static full and Range responses; buffered upstream full, Range, chunked, and close-delimited responses. Unbuffered proxying is inconclusive because it leaves insufficient queued data.
+
+See [worker/heap evidence](evidence/release-validation/worker-heap-matrix.md), [arm64 evidence](evidence/release-validation/arm64-results-summary.json), and [response-delivery evidence](evidence/release-validation/response-matrix.csv).
+
+### Full RCE
 
 | CVE | Tested path | Current result |
 | --- | --- | --- |
-| `CVE-2026-123007` | HTTP/2 flow control | Compact accounting differential. Rapid7's full RCE chain independently reproduced on matched native AVX512 profiles. |
+| `CVE-2026-123007` | HTTP/2 flow control | Rapid7's full RCE chain independently reproduced on matched native x86-64 AVX512 profiles for nginx 1.31.6 and 1.31.8. |
 | `CVE-2026-123633` | HTTP/2 with upstream proxying | UAF and stock worker crash reproduced; no unified RCE adapter. |
 | `CVE-2026-123634` | Runtime DNS resolution with subrequests | ASAN UAF and custom-debug crashes; no stock-image crash or unified RCE adapter. |
 | `CVE-2026-121810` | HTTP/3 with upstream proxying | Not reproduced. |
