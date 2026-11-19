@@ -1,0 +1,52 @@
+{
+  "nginx:1.30.0": {
+    "image_id": "sha256:603c651b91ddee0ff6f66e1a4533149bcaa8ef1e2cca84e13b83365a451b02c5",
+    "os_architecture": "linux/arm64",
+    "repo_digests": []
+  },
+  "nginx:1.30.6": {
+    "image_id": "sha256:ad89dd605752159fd852de0a3aba245fd27fea42ab318a1a220471c1585cccad",
+    "os_architecture": "linux/arm64",
+    "repo_digests": []
+  },
+  "nginx:1.31.0": {
+    "image_id": "sha256:4db8f27a0bd377468b3629643669c76519d6f5ed0200e384dbfb417093e6ac72",
+    "os_architecture": "linux/arm64",
+    "repo_digests": []
+  },
+  "nginx:1.31.5": {
+    "image_id": "sha256:837d83d05b6db44d38803c877ef6e7e8c9c9ce009bd0bdf18c538150f48424f1",
+    "os_architecture": "linux/arm64",
+    "repo_digests": []
+  },
+  "nginx:1.31.6": {
+    "image_id": "sha256:4766b8404b1d7dddf0408498394a3ca78ac0f26882e8ff70289a19624135b3a8",
+    "os_architecture": "linux/arm64",
+    "repo_digests": []
+  },
+  "nginx:1.31.7": {
+    "image_id": "sha256:c61623d9912d6330d35d717edd83fbadf5101667b9ef40cad48dc75946066ea2",
+    "os_architecture": "linux/arm64",
+    "repo_digests": []
+  },
+  "nginx:1.31.8": {
+    "image_id": "sha256:809ba3eaffefcec326618bd941416984a9d721a110bf6eb8f8aa009404d86c00",
+    "os_architecture": "linux/arm64",
+    "repo_digests": []
+  },
+  "nginx:1.31.9": {
+    "image_id": "sha256:28a8a492d220482973634154186ff954997c767c5144080849ee892a107e20cc",
+    "os_architecture": "linux/arm64",
+    "repo_digests": []
+  },
+  "nginx-old:1.9.5": {
+    "image_id": "sha256:5ac853f078aff442098a00ac49e68587dd014137b312d7b88bb93077d35ac8cd",
+    "os_architecture": "linux/arm64",
+    "repo_digests": []
+  },
+  "python:3.10-slim": {
+    "image_id": "sha256:b3e82a46b0d5c0a5dc19e105c8ddb5588ea730b25e1bfed0020938a2c7447b15",
+    "os_architecture": "linux/arm64",
+    "repo_digests": []
+  }
+}

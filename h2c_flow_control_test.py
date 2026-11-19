@@ -35,6 +35,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import ipaddress
+import platform
 import json
 import socket
 import ssl
@@ -223,6 +224,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Run the isolated h2c Docker differential (conflicts with --tls)",
     )
+    parser.add_argument(
+        "--platform",
+        choices=("native", "linux/amd64", "linux/arm64"),
+        default="native",
+        help="Docker platform for targets and client; native selects the host architecture",
+    )
     parser.add_argument("--output", type=Path, help="Write structured JSON evidence")
     parser.add_argument(
         "--versions",
@@ -271,7 +278,11 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     if args.docker:
         return docker_differential(
-            args.output, args.command_timeout, args.client_timeout, args.versions
+            args.output,
+            args.command_timeout,
+            args.client_timeout,
+            args.versions,
+            args.platform,
         )
     host, port = args.host, args.port
     address = ipaddress.ip_address(host)
@@ -429,11 +440,17 @@ def docker_differential(
     command_timeout: int = 45,
     client_timeout: int = 45,
     versions: str = "1.31.8,1.31.9",
+    platform_name: str = "native",
 ) -> int:
     """Run a bounded, isolated h2c differential and optionally save JSON evidence."""
     label = "io.censys.research.nginx2root-compact"
     run_id = f"selftest-{uuid.uuid4().hex[:12]}"
     network = f"nginx2root-compact-{run_id}"
+    docker_platform = (
+        f"linux/{'arm64' if platform.machine().lower() in {'arm64', 'aarch64'} else 'amd64'}"
+        if platform_name == "native"
+        else platform_name
+    )
     config = (
         "user nginx; worker_processes 1; "
         "events { worker_connections 1024; } "
@@ -496,7 +513,7 @@ def docker_differential(
                 "--name",
                 name,
                 "--platform",
-                "linux/amd64",
+                docker_platform,
                 "--network",
                 network,
                 "--label",

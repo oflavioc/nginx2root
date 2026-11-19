@@ -1,0 +1,276 @@
+{
+  "cve": "CVE-2026-123007",
+  "scope": "accounting_only_not_rce",
+  "environment": {
+    "host": "macOS arm64",
+    "docker_server_architecture": "aarch64",
+    "selected_docker_platform": "linux/arm64",
+    "transport": "cleartext HTTP/2 (h2c)",
+    "target": "numeric loopback 127.0.0.1:80 inside each disposable container network namespace",
+    "network": "fresh internal Docker network per run; no published ports; no external targets",
+    "worker_processes": 1,
+    "modern_config": "listen 80; http2 on;",
+    "legacy_config": "listen 80 http2;",
+    "fixture": "dd if=/dev/zero of=big.bin bs=1048576 count=8 status=none",
+    "fixture_size": 8388608,
+    "fixture_sha256": "2daeb1f36095b44b318410b3f4e8b5d989dcc7bb023d1426c492dab0a3053e74",
+    "client_image": "python:3.10-slim",
+    "runner_sha256": "0f81e838ac4a9dc6fa945614b0422f8101422f3da252999c3842a3efc0890175"
+  },
+  "commands": [
+    "python3 -I /Users/aidanholland/Desktop/Projects/aidans-random-research-scripts/investigations/nginx2root-2026-11-18/compatibility/arm64/h2c_flow_control_test.py --docker --platform native --versions 1.30.0,1.30.6,1.31.0,1.31.5,1.31.6,1.31.7,1.31.8,1.31.9 --output /Users/aidanholland/Desktop/Projects/aidans-random-research-scripts/investigations/nginx2root-2026-11-18/compatibility/arm64/modern-results.json --command-timeout 120 --client-timeout 60 --acknowledge-local-lab I-AUTHORIZE-LOCAL-LAB > /Users/aidanholland/Desktop/Projects/aidans-random-research-scripts/investigations/nginx2root-2026-11-18/compatibility/arm64/modern-run.log 2>&1",
+    "python3 -I /Users/aidanholland/Desktop/Projects/aidans-random-research-scripts/investigations/nginx2root-2026-11-18/compatibility/arm64/h2c_flow_control_test.py --docker --platform linux/arm64 --versions 1.9.5 --output /Users/aidanholland/Desktop/Projects/aidans-random-research-scripts/investigations/nginx2root-2026-11-18/compatibility/arm64/legacy-results.json --command-timeout 120 --client-timeout 60 --acknowledge-local-lab I-AUTHORIZE-LOCAL-LAB > /Users/aidanholland/Desktop/Projects/aidans-random-research-scripts/investigations/nginx2root-2026-11-18/compatibility/arm64/legacy-run.log 2>&1"
+  ],
+  "image_metadata": {
+    "nginx:1.30.0": {
+      "image_id": "sha256:603c651b91ddee0ff6f66e1a4533149bcaa8ef1e2cca84e13b83365a451b02c5",
+      "os_architecture": "linux/arm64",
+      "repo_digests": []
+    },
+    "nginx:1.30.6": {
+      "image_id": "sha256:ad89dd605752159fd852de0a3aba245fd27fea42ab318a1a220471c1585cccad",
+      "os_architecture": "linux/arm64",
+      "repo_digests": []
+    },
+    "nginx:1.31.0": {
+      "image_id": "sha256:4db8f27a0bd377468b3629643669c76519d6f5ed0200e384dbfb417093e6ac72",
+      "os_architecture": "linux/arm64",
+      "repo_digests": []
+    },
+    "nginx:1.31.5": {
+      "image_id": "sha256:837d83d05b6db44d38803c877ef6e7e8c9c9ce009bd0bdf18c538150f48424f1",
+      "os_architecture": "linux/arm64",
+      "repo_digests": []
+    },
+    "nginx:1.31.6": {
+      "image_id": "sha256:4766b8404b1d7dddf0408498394a3ca78ac0f26882e8ff70289a19624135b3a8",
+      "os_architecture": "linux/arm64",
+      "repo_digests": []
+    },
+    "nginx:1.31.7": {
+      "image_id": "sha256:c61623d9912d6330d35d717edd83fbadf5101667b9ef40cad48dc75946066ea2",
+      "os_architecture": "linux/arm64",
+      "repo_digests": []
+    },
+    "nginx:1.31.8": {
+      "image_id": "sha256:809ba3eaffefcec326618bd941416984a9d721a110bf6eb8f8aa009404d86c00",
+      "os_architecture": "linux/arm64",
+      "repo_digests": []
+    },
+    "nginx:1.31.9": {
+      "image_id": "sha256:28a8a492d220482973634154186ff954997c767c5144080849ee892a107e20cc",
+      "os_architecture": "linux/arm64",
+      "repo_digests": []
+    },
+    "nginx-old:1.9.5": {
+      "image_id": "sha256:5ac853f078aff442098a00ac49e68587dd014137b312d7b88bb93077d35ac8cd",
+      "os_architecture": "linux/arm64",
+      "repo_digests": []
+    },
+    "python:3.10-slim": {
+      "image_id": "sha256:b3e82a46b0d5c0a5dc19e105c8ddb5588ea730b25e1bfed0020938a2c7447b15",
+      "os_architecture": "linux/arm64",
+      "repo_digests": []
+    }
+  },
+  "modern_results": [
+    {
+      "version": "1.30.0",
+      "image": "nginx:1.30.0",
+      "client_exit": 0,
+      "expected_exit": 0,
+      "architecture": "linux/arm64",
+      "workers": 1,
+      "fixture_size": 8388608,
+      "fixture_sha256": "2daeb1f36095b44b318410b3f4e8b5d989dcc7bb023d1426c492dab0a3053e74",
+      "verdict": "VULNERABLE_POSITIVE",
+      "raw_evidence": [
+        "nginx-1.30.0-client.log",
+        "nginx-1.30.0-target.txt",
+        "nginx-1.30.0-server.log"
+      ],
+      "evidence": [
+        "stage 4 WINDOW_UPDATE(0, 4194304) and RST_STREAM(157) completed",
+        "stage 5 WINDOW_UPDATE(0, 1) sent; no GOAWAY or TCP close",
+        "stage 6 received PING stream=0 flags=1 (ACK) for POC-SYNC",
+        "OVER-CREDIT accounting error observed; exit 0"
+      ]
+    },
+    {
+      "version": "1.30.6",
+      "image": "nginx:1.30.6",
+      "client_exit": 0,
+      "expected_exit": 0,
+      "architecture": "linux/arm64",
+      "workers": 1,
+      "fixture_size": 8388608,
+      "fixture_sha256": "2daeb1f36095b44b318410b3f4e8b5d989dcc7bb023d1426c492dab0a3053e74",
+      "verdict": "VULNERABLE_POSITIVE",
+      "raw_evidence": [
+        "nginx-1.30.6-client.log",
+        "nginx-1.30.6-target.txt",
+        "nginx-1.30.6-server.log"
+      ],
+      "evidence": [
+        "stage 4 WINDOW_UPDATE(0, 4194304) and RST_STREAM(157) completed",
+        "stage 5 WINDOW_UPDATE(0, 1) sent; no GOAWAY or TCP close",
+        "stage 6 received PING stream=0 flags=1 (ACK) for POC-SYNC",
+        "OVER-CREDIT accounting error observed; exit 0"
+      ]
+    },
+    {
+      "version": "1.31.0",
+      "image": "nginx:1.31.0",
+      "client_exit": 0,
+      "expected_exit": 0,
+      "architecture": "linux/arm64",
+      "workers": 1,
+      "fixture_size": 8388608,
+      "fixture_sha256": "2daeb1f36095b44b318410b3f4e8b5d989dcc7bb023d1426c492dab0a3053e74",
+      "verdict": "VULNERABLE_POSITIVE",
+      "raw_evidence": [
+        "nginx-1.31.0-client.log",
+        "nginx-1.31.0-target.txt",
+        "nginx-1.31.0-server.log"
+      ],
+      "evidence": [
+        "stage 4 WINDOW_UPDATE(0, 4194304) and RST_STREAM(157) completed",
+        "stage 5 WINDOW_UPDATE(0, 1) sent; no GOAWAY or TCP close",
+        "stage 6 received PING stream=0 flags=1 (ACK) for POC-SYNC",
+        "OVER-CREDIT accounting error observed; exit 0"
+      ]
+    },
+    {
+      "version": "1.31.5",
+      "image": "nginx:1.31.5",
+      "client_exit": 0,
+      "expected_exit": 0,
+      "architecture": "linux/arm64",
+      "workers": 1,
+      "fixture_size": 8388608,
+      "fixture_sha256": "2daeb1f36095b44b318410b3f4e8b5d989dcc7bb023d1426c492dab0a3053e74",
+      "verdict": "VULNERABLE_POSITIVE",
+      "raw_evidence": [
+        "nginx-1.31.5-client.log",
+        "nginx-1.31.5-target.txt",
+        "nginx-1.31.5-server.log"
+      ],
+      "evidence": [
+        "stage 4 WINDOW_UPDATE(0, 4194304) and RST_STREAM(157) completed",
+        "stage 5 WINDOW_UPDATE(0, 1) sent; no GOAWAY or TCP close",
+        "stage 6 received PING stream=0 flags=1 (ACK) for POC-SYNC",
+        "OVER-CREDIT accounting error observed; exit 0"
+      ]
+    },
+    {
+      "version": "1.31.6",
+      "image": "nginx:1.31.6",
+      "client_exit": 0,
+      "expected_exit": 0,
+      "architecture": "linux/arm64",
+      "workers": 1,
+      "fixture_size": 8388608,
+      "fixture_sha256": "2daeb1f36095b44b318410b3f4e8b5d989dcc7bb023d1426c492dab0a3053e74",
+      "verdict": "VULNERABLE_POSITIVE",
+      "raw_evidence": [
+        "nginx-1.31.6-client.log",
+        "nginx-1.31.6-target.txt",
+        "nginx-1.31.6-server.log"
+      ],
+      "evidence": [
+        "stage 4 WINDOW_UPDATE(0, 4194304) and RST_STREAM(157) completed",
+        "stage 5 WINDOW_UPDATE(0, 1) sent; no GOAWAY or TCP close",
+        "stage 6 received PING stream=0 flags=1 (ACK) for POC-SYNC",
+        "OVER-CREDIT accounting error observed; exit 0"
+      ]
+    },
+    {
+      "version": "1.31.7",
+      "image": "nginx:1.31.7",
+      "client_exit": 0,
+      "expected_exit": 0,
+      "architecture": "linux/arm64",
+      "workers": 1,
+      "fixture_size": 8388608,
+      "fixture_sha256": "2daeb1f36095b44b318410b3f4e8b5d989dcc7bb023d1426c492dab0a3053e74",
+      "verdict": "VULNERABLE_POSITIVE",
+      "raw_evidence": [
+        "nginx-1.31.7-client.log",
+        "nginx-1.31.7-target.txt",
+        "nginx-1.31.7-server.log"
+      ],
+      "evidence": [
+        "stage 4 WINDOW_UPDATE(0, 4194304) and RST_STREAM(157) completed",
+        "stage 5 WINDOW_UPDATE(0, 1) sent; no GOAWAY or TCP close",
+        "stage 6 received PING stream=0 flags=1 (ACK) for POC-SYNC",
+        "OVER-CREDIT accounting error observed; exit 0"
+      ]
+    },
+    {
+      "version": "1.31.8",
+      "image": "nginx:1.31.8",
+      "client_exit": 0,
+      "expected_exit": 0,
+      "architecture": "linux/arm64",
+      "workers": 1,
+      "fixture_size": 8388608,
+      "fixture_sha256": "2daeb1f36095b44b318410b3f4e8b5d989dcc7bb023d1426c492dab0a3053e74",
+      "verdict": "VULNERABLE_POSITIVE",
+      "raw_evidence": [
+        "nginx-1.31.8-client.log",
+        "nginx-1.31.8-target.txt",
+        "nginx-1.31.8-server.log"
+      ],
+      "evidence": [
+        "stage 4 WINDOW_UPDATE(0, 4194304) and RST_STREAM(157) completed",
+        "stage 5 WINDOW_UPDATE(0, 1) sent; no GOAWAY or TCP close",
+        "stage 6 received PING stream=0 flags=1 (ACK) for POC-SYNC",
+        "OVER-CREDIT accounting error observed; exit 0"
+      ]
+    },
+    {
+      "version": "1.31.9",
+      "image": "nginx:1.31.9",
+      "client_exit": 1,
+      "expected_exit": 1,
+      "architecture": "linux/arm64",
+      "workers": 1,
+      "fixture_size": 8388608,
+      "fixture_sha256": "2daeb1f36095b44b318410b3f4e8b5d989dcc7bb023d1426c492dab0a3053e74",
+      "verdict": "PATCHED_EARLY_REFUND_REJECTION",
+      "raw_evidence": [
+        "nginx-1.31.9-client.log",
+        "nginx-1.31.9-target.txt",
+        "nginx-1.31.9-server.log"
+      ],
+      "evidence": [
+        "initial refill and big.bin request completed",
+        "TCP closed at stage 4 after WINDOW_UPDATE(0, 4194304)",
+        "client stopped before the one-byte probe; no PING ACK",
+        "patched bound rejected the earlier refund; exit 1 as expected"
+      ]
+    }
+  ],
+  "legacy_result": {
+    "version": "1.9.5",
+    "image": "nginx-old:1.9.5",
+    "client_exit": 2,
+    "verdict": "INCONCLUSIVE",
+    "evidence": [
+      "listen 80 http2 accepted; one worker and exact fixture confirmed",
+      "73 index responses were 612 bytes rather than the modern 896 bytes",
+      "initial WINDOW_UPDATE(0, 2147483647) produced GOAWAY last=147 err=3 and TCP close",
+      "the one-byte accounting probe was not reached; no vulnerability conclusion"
+    ],
+    "raw_evidence": [
+      "legacy-results.json",
+      "legacy-run.log",
+      "nginx-1.9.5-client.log",
+      "nginx-1.9.5-target.txt"
+    ]
+  },
+  "modern_runner_exit": 0,
+  "legacy_runner_exit": 1,
+  "cleanup": "all run-labeled containers and run-specific networks removed; pre-existing nginx2root-compact-net not owned by these runs left untouched",
+  "public_repo_modified": false
+}
