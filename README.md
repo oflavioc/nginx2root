@@ -2,7 +2,7 @@
 
 Censys Research's isolated-lab reproductions of the five nginx2root vulnerabilities. This repository contains a compact HTTP/2 accounting proof of concept, packet captures, independent command-execution evidence, and a guarded compatibility runner.
 
-**Start here:** the [single-file compact PoC](h2c_flow_control_test.py) demonstrates the `CVE-2026-123007` accounting error on nginx 1.31.6, 1.31.7, and 1.31.8, with the patched 1.31.9 control over cleartext h2c. It is not an RCE exploit.
+**Start here:** the [single-file compact PoC](h2c_flow_control_test.py) demonstrates the `CVE-2026-123007` accounting error on every release from nginx 1.30.0 through 1.31.8, with the patched 1.31.9 control over cleartext h2c. It is not an RCE exploit.
 
 ## Quick start
 
@@ -29,7 +29,7 @@ Read [compact PoC instructions](docs/COMPACT-POC.md) and the [safety boundary](S
 
 ## What the compact PoC does
 
-The client consumes the initial connection window, queues an 8 MB response, resets the stream, and probes the accounting error with a one-byte update. Vulnerable nginx accepts it and answers PING. Patched nginx rejects the earlier 4 MiB update and closes the connection. The differential is verified on 1.31.6, 1.31.7, and 1.31.8, with 1.31.9 as the patched control.
+The client consumes the initial connection window, queues an 8 MB response, resets the stream, and probes the accounting error with a one-byte update. Vulnerable nginx accepts it and answers PING. Patched nginx rejects the earlier 4 MiB update and closes the connection. The differential is verified on every release from 1.30.0 through 1.31.8, with 1.31.9 as the patched control.
 
 It does **not** corrupt memory, reclaim objects, install callbacks, execute commands, or create a shell. TLS support for the compact test is not validated.
 

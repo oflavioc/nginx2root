@@ -42,24 +42,23 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /tmp/nginx2root-docker-images.tar
-          key: nginx2root-docker-v2-nginx-1.31.6-1.31.7-1.31.8-1.31.9-python-3.10-slim
+          key: nginx2root-docker-v3-nginx-1.30.0-1.31.9-python-3.10-slim
       - name: Pull images on cache miss
         if: steps.cache-images.outputs.cache-hit != 'true'
         id: cache-images
         run: |
-          docker pull --platform linux/amd64 nginx:1.31.6
-          docker pull --platform linux/amd64 nginx:1.31.7
-          docker pull --platform linux/amd64 nginx:1.31.8
-          docker pull --platform linux/amd64 nginx:1.31.9
+          for version in 1.30.0 1.30.1 1.30.2 1.30.3 1.30.4 1.30.5 1.30.6 1.31.0 1.31.1 1.31.2 1.31.3 1.31.4 1.31.5 1.31.6 1.31.7 1.31.8 1.31.9; do
+            docker pull --platform linux/amd64 "nginx:$version"
+          done
           docker pull --platform linux/amd64 python:3.10-slim
-          docker save nginx:1.31.6 nginx:1.31.7 nginx:1.31.8 nginx:1.31.9 python:3.10-slim -o /tmp/nginx2root-docker-images.tar
+          docker save $(printf 'nginx:%s ' 1.30.0 1.30.1 1.30.2 1.30.3 1.30.4 1.30.5 1.30.6 1.31.0 1.31.1 1.31.2 1.31.3 1.31.4 1.31.5 1.31.6 1.31.7 1.31.8 1.31.9) python:3.10-slim -o /tmp/nginx2root-docker-images.tar
       - name: Load cached images
         if: steps.cache-images.outputs.cache-hit == 'true'
         run: docker load -i /tmp/nginx2root-docker-images.tar
       - run: |
           uv run python -I h2c_flow_control_test.py \
             --docker \
-            --versions 1.31.6,1.31.7,1.31.8,1.31.9 \
+            --versions 1.30.0,1.30.1,1.30.2,1.30.3,1.30.4,1.30.5,1.30.6,1.31.0,1.31.1,1.31.2,1.31.3,1.31.4,1.31.5,1.31.6,1.31.7,1.31.8,1.31.9 \
             --output /tmp/nginx2root-compact-evidence.json \
             --command-timeout 90 \
             --client-timeout 90 \

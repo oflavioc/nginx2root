@@ -33,12 +33,12 @@ The command exits zero only when vulnerable 1.31.8 accepts the one-byte update a
 
 ## Expanded version matrix
 
-The compact accounting differential has been verified on **1.31.6, 1.31.7, and 1.31.8**, with **1.31.9** as the rejecting patched control. Run all four:
+The compact accounting differential is verified on **every release from 1.30.0 through 1.31.8**, with **1.31.9** as the rejecting patched control. Run the complete supported matrix:
 
 ```sh
 uv run python -I h2c_flow_control_test.py \
   --docker \
-  --versions 1.31.6,1.31.7,1.31.8,1.31.9 \
+  --versions 1.30.0,1.30.1,1.30.2,1.30.3,1.30.4,1.30.5,1.30.6,1.31.0,1.31.1,1.31.2,1.31.3,1.31.4,1.31.5,1.31.6,1.31.7,1.31.8,1.31.9 \
   --output /tmp/nginx2root-compact-matrix-evidence.json \
   --acknowledge-local-lab I-AUTHORIZE-LOCAL-LAB
 ```

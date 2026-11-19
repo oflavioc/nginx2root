@@ -450,17 +450,15 @@ def docker_differential(
         started_at=datetime.now(timezone.utc).isoformat(),
     )
     selected_versions = tuple(versions.split(","))
-    if selected_versions != (
-        "1.31.6",
-        "1.31.7",
-        "1.31.8",
-        "1.31.9",
-    ) and selected_versions != (
-        "1.31.8",
-        "1.31.9",
+    supported_versions = {
+        *(f"1.30.{minor}" for minor in range(7)),
+        *(f"1.31.{minor}" for minor in range(10)),
+    }
+    if not selected_versions or any(
+        version not in supported_versions for version in selected_versions
     ):
         raise ValueError(
-            "versions must be 1.31.8,1.31.9 or 1.31.6,1.31.7,1.31.8,1.31.9"
+            "versions must be comma-separated nginx 1.30.0-1.30.6 or 1.31.0-1.31.9"
         )
     targets: list[TargetEvidence] = []
     passed = False
