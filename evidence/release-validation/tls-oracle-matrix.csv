@@ -1,0 +1,9 @@
+version,exit,oracle_only_over_credit,crash_amplifier_started,version_check,server_rejection,worker_signal_events,client_log,server_log
+1.30.0,0,True,False,nginx version: nginx/1.30.0,,0,1.30.0-client.log,1.30.0-nginx.log
+1.30.6,0,True,False,,,0,1.30.6-client.log,1.30.6-nginx.log
+1.31.0,0,True,False,,,0,1.31.0-client.log,1.31.0-nginx.log
+1.31.5,0,True,False,,,0,1.31.5-client.log,1.31.5-nginx.log
+1.31.6,0,True,False,,,0,1.31.6-client.log,1.31.6-nginx.log
+1.31.7,0,True,False,,,0,1.31.7-client.log,1.31.7-nginx.log
+1.31.8,0,True,False,,,0,1.31.8-client.log,1.31.8-nginx.log
+1.31.9,1,False,False,nginx version: nginx/1.31.9,"client violated connection flow control: received WINDOW_UPDATE frame with window increment 2147483647 not allowed for window 1792 while processing HTTP/2 connection, client: 172.17.0.1, server: 0.0.0.0:443",0,1.31.9-client.log,1.31.9-nginx.log
