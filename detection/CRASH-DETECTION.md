@@ -203,7 +203,7 @@ A healthy nginx emits **zero** `exited on signal` lines. Planned reloads (`SIGHU
 
 ## Section C. One network behavioral rule (failure-mode precursor) plus a low-confidence liveness companion
 
-These two rules are **new** and are **not yet validated against captured traffic**. They are distinct from the repository's shipped, validated oracle chain:
+These two rules are **new**. They **load cleanly under `suricata -T`** (signature/syntax validation passes, confirmed 2026-11-21 against `jasonish/suricata:latest`), but are **not yet validated against captured traffic** — loadable is not the same as proven to fire on real frames, and both carry `validated no` in their metadata until a pcap confirms them. They are distinct from the repository's shipped, validated oracle chain:
 
 - Shipped and validated (captured PoC traffic, cleartext h2c): SIDs `9007013`-`9007015`, the precise RST then WINDOW_UPDATE(0,1) then PING flowbits chain. Use those when you have the PoC pcap.
 - Below (this file): SID `9007016` behavioral precursor and SID `9007017` liveness corroboration, for live estates where you do not have the exact oracle frames. Treat them as tuning starting points, not as finished signatures. (SID `9007012` is intentionally left unused to avoid collision with the existing `9007010`-`9007015` block.)
@@ -221,11 +221,8 @@ The failure-mode shape is many concurrent HTTP/2 streams carrying tiny DATA fram
 alert tcp any any -> $HTTP_SERVERS any ( \
     msg:"NGINX2ROOT CVE-2026-123007 precursor: oversized connection WINDOW_UPDATE burst over h2c (LOW confidence, behavioral)"; \
     flow:established,to_server; \
-    # WINDOW_UPDATE frame header: length=0x000004, type=0x08, flags=0x00, stream id=0x00000000 (connection-level).
     content:"|00 00 04 08 00 00 00 00 00|"; \
-    # Next 4 bytes are the window increment; flag an increment >= 0x00100000 (1 MiB).
     byte_test:4,>=,1048576,0,relative; \
-    # Burst: 20 such frames from one source within 10 seconds. Tune per estate after baselining.
     threshold:type threshold, track by_src, count 20, seconds 10; \
     flowbits:set,nginx2root.overcredit_precursor; \
     classtype:attempted-dos; \
@@ -250,7 +247,6 @@ alert tcp $HTTP_SERVERS any -> any any ( \
     msg:"NGINX2ROOT CVE-2026-123007 liveness: server PING-ACK after over-credit precursor (NOT proof, corroboration-only, high FP)"; \
     flow:established,to_client; \
     flowbits:isset,nginx2root.overcredit_precursor; \
-    # PING frame with ACK: length=0x000008, type=0x06, flags=0x01 (ACK), stream id=0x00000000.
     content:"|00 00 08 06 01 00 00 00 00|"; \
     threshold:type limit, track by_dst, count 1, seconds 60; \
     classtype:not-suspicious; \
