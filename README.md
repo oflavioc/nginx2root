@@ -4,6 +4,8 @@ Censys Research's isolated-lab reproductions of the five nginx2root vulnerabilit
 
 **Start here:** the [single-file compact PoC](h2c_flow_control_test.py) demonstrates the `CVE-2026-123007` accounting error on every release from nginx 1.30.0 through 1.31.8, with the patched 1.31.9 control over cleartext h2c. It is not an RCE exploit.
 
+> **A false negative is the worst outcome here.** Do not run the accounting probe over TLS and read "nothing" as patched. Over TLS the differential does not discriminate, so a null TLS result is **unknown**, never patched. See the [TLS and h2c calibration](calibration/TLS-H2C-DIFFERENTIAL.md) before you trust any negative.
+
 ## Quick start
 
 Requirements: Docker with the `nginx:1.31.8` and `nginx:1.31.9` images, and Python 3.10 or newer. Use a disposable lab you own.
@@ -30,6 +32,8 @@ Read [compact PoC instructions](docs/COMPACT-POC.md) and the [safety boundary](S
 ## What the compact PoC does
 
 The client consumes the initial connection window, queues an 8 MB response, resets the stream, and probes the accounting error with a one-byte update. Vulnerable nginx accepts it and answers PING. Patched nginx rejects the earlier 4 MiB update and closes the connection. The differential is verified on every release from 1.30.0 through 1.31.8, with 1.31.9 as the patched control.
+
+This is a **lab-calibrated differential for internal cleartext-h2c origins**, not an internet TLS scanner. It is lab-discriminating only under its stated preconditions, over h2c: enough queued bytes, a single worker in the lab matrix, and a direct path to the origin. The one realistic topology is a TLS-terminating load balancer or ingress in front of a plaintext h2c origin, where the probe reaches that origin directly over cleartext. Over TLS the same probe does not discriminate patched from vulnerable (see the [TLS and h2c calibration](calibration/TLS-H2C-DIFFERENTIAL.md)), so a null result over TLS is **unknown**, never **patched**.
 
 It does **not** corrupt memory, reclaim objects, install callbacks, execute commands, or create a shell. TLS support for the compact test is not validated.
 
@@ -111,6 +115,15 @@ uv run pytest
 ```
 
 CI also runs Python compilation, formatting checks, unit tests, and the real compact Docker differential.
+
+## Defensive deliverables
+
+For defenders who need to establish patch status and detect exploitation, this repository ships artifacts built on three-valued logic: **vulnerable**, **not-affected**, or **unknown**. None of them turns a remote banner into a verdict. The affected range is nginx 1.9.5 through 1.30.6 and 1.31.0 through 1.31.8, fixed upstream in 1.30.7 (stable) and 1.31.9 (mainline), and HTTP/2 must be enabled.
+
+- [Patch-state matrix](PATCH-STATE-MATRIX.md): per-distro and per-product status with a confidence column. Remote detection is **banner-aware**: a banner whose version falls in the affected range is a **CANDIDATE**, never a verdict, and everything we did not lab-verify is an **unknown** row. The banner lies. Ubuntu backports the fix while keeping the identical `nginx/1.18.0 (Ubuntu)` banner (lab-verified: pre-patch `1.18.0-6ubuntu14` is vulnerable, post-USN `1.18.0-6ubuntu14.24` is patched, same banner and same HTTP/2 SETTINGS). The only reliable check is on-host: `dpkg -l nginx-core` (Debian and Ubuntu), `rpm -q nginx` (RHEL family), `apk info nginx` (Alpine), and `nginx -V` for the build configuration. Debian, RHEL, AlmaLinux, Rocky, Alpine, Amazon Linux 2023, Chainguard, OpenResty, ingress-nginx, Kong, Tengine, and NGINX Plus are **unknown** rows with the on-host method stated; we did not invent advisory IDs or fixed versions for them.
+- [Crash detection](detection/CRASH-DETECTION.md): host-side and log-side signals for the availability event that firing the Rapid7 chain actually produces, a worker double-free (`free(): double free detected in tcache 2`) and exit on signal 6. This is a single-shot denial-of-service primitive in the general case; RCE is profile-gated and AVX-512 gated.
+- [OpenVEX statement](VEX/CVE-2026-123007.openvex.json): a machine-readable VEX document for CVE-2026-123007 that asserts only the lab-verified status and marks everything else as under investigation.
+- [TLS and h2c calibration](calibration/TLS-H2C-DIFFERENTIAL.md): the calibration data behind the false-negative warning. The accounting differential discriminates 1.31.8 (vulnerable, accepts the post-RST over-credit and answers PING) from 1.31.9 (patched, closes after the 4 MiB refund) over **cleartext h2c**, and does **not** discriminate over TLS.
 
 ## License
 
