@@ -2,6 +2,8 @@
 
 This is a consumer-facing reference for scanner vendors deciding how to classify an nginx target for `CVE-2026-123007` (nginx2root), the HTTP/2 flow-control send-window over-credit (CWE-191). It records only what we verified in the lab or can cite to an upstream source. Everything else is marked `unknown` with the exact on-host command that resolves it. Three-valued logic is used throughout: `vulnerable`, `not-affected`, `unknown`. There is no fourth "probably" state; a remote banner reading in the affected range is a `candidate`, which is a subtype of `unknown`, never a verdict.
 
+**What this matrix is (and is not):** it records a banner-plus-package-revision *expected* state from vendor metadata — a triage input. It is never a claim that a given host's memory is actually corruptible, nor that the host is exploitable; both need on-host build inspection plus the gated RCE preconditions (matching golden profile + AVX-512). Key every row on the installed package revision, not the banner.
+
 ## Why a remote banner cannot decide patch state
 
 The `Server` banner is not a reliable patch oracle for this CVE, and in the common distro case it is actively misleading.
