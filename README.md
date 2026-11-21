@@ -70,7 +70,7 @@ A worker crash, sanitizer report, allocation reuse, or client dispatch message i
 
 ## Full RCE evidence
 
-On 2026-11-21, Censys reproduced Rapid7's complete `CVE-2026-123007` exploit chain exactly once, against a disposable, isolated nginx 1.31.8 container we own, driven from a `python:3.10` container with the native streamer recompiled from source, on an AVX-512 host (Ryzen 9 7950X). The profile `golden-nginx-1.31.8-debian13-amd64` was auto-selected. This single run dispatched ~119.02 GiB of plaintext over 16 auxiliary connections in ~190 seconds, captured a 14,393-byte memory disclosure, and resolved ASLR (H=0x594f9ac415c0, nginx=0x594f819ad840, libc=0x72978269a000), recovering the in-band libc `system` at 0x7297826ed090. It then reclaimed the overwritten pool and dispatched a cleanup callback invoking `system(command)`.
+On 2026-11-21, I reproduced Rapid7's complete `CVE-2026-123007` exploit chain exactly once, against a disposable, isolated nginx 1.31.8 container I own, driven from a `python:3.10` container with the native streamer recompiled from source, on an AVX-512 host (Ryzen 9 7950X). The profile `golden-nginx-1.31.8-debian13-amd64` was auto-selected. This single run dispatched ~119.02 GiB of plaintext over 16 auxiliary connections in ~190 seconds, captured a 14,393-byte memory disclosure, and resolved ASLR (H=0x594f9ac415c0, nginx=0x594f819ad840, libc=0x72978269a000), recovering the in-band libc `system` at 0x7297826ed090. It then reclaimed the overwritten pool and dispatched a cleanup callback invoking `system(command)`.
 
 The harmless command, passed via `--cmd`, was:
 

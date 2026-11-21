@@ -46,7 +46,7 @@ where `2145239073 = 0x7fffffff - 2244574`. That ~2.1 MiB reduction is the `send_
 
 ### 5. Ubuntu 1.18.0 backport calibration — same banner, opposite behavior, serving-mode trap
 
-**Empirically proven** (3 version-matched builds, `D:\NexaLab\scenarios\nginx2root\ubuntu-backport-proof.md`):
+**Empirically proven** (3 version-matched builds, `evidence/cve-2026-123007/ubuntu-backport-proof.md`):
 
 **Static serving:**
 | Build | Banner | Oracle | Verdict |

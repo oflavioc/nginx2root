@@ -2,7 +2,7 @@
 
 This pack detects the **failure** that the nginx2root HTTP/2 flow-control over-credit (`CVE-2026-123007`, CWE-191) produces on a host, not the exploit that caused it. The confirmed end state of Rapid7's full chain against a vulnerable build is a worker that aborts and exits (an availability event). This document gives on-host log, service, orchestration, and core-dump signals for that end state, plus one network behavioral rule framed as a failure-mode precursor.
 
-It is complementary to the network oracle rules the repository already ships for **captured PoC traffic** (Suricata SIDs `9007013`-`9007015`, the flowbits-linked RST then WINDOW_UPDATE(0,1) then PING chain, validated to fire exactly once on `evidence/cve-2026-123007/oracle-v2-positive.pcap` and zero times on `oracle-v2-negative.pcap`). Those rules need the discriminating frames on the wire and were only validated over cleartext h2c. This file adds the **on-host crash signal, which did not exist before**, so a defender who cannot see decrypted HTTP/2 frames still has something to alert on.
+It is complementary to the network oracle rules validated during the investigation (rule bodies retained in the private evidence set, not committed here) for **captured PoC traffic** (Suricata SIDs `9007013`-`9007015`, the flowbits-linked RST then WINDOW_UPDATE(0,1) then PING chain, validated to fire exactly once on `evidence/cve-2026-123007/oracle-v2-positive.pcap` and zero times on `oracle-v2-negative.pcap`). Those rules need the discriminating frames on the wire and were only validated over cleartext h2c. This file adds the **on-host crash signal, which did not exist before**, so a defender who cannot see decrypted HTTP/2 frames still has something to alert on.
 
 ## Honesty contract (read before using any verdict here)
 
@@ -203,9 +203,9 @@ A healthy nginx emits **zero** `exited on signal` lines. Planned reloads (`SIGHU
 
 ## Section C. One network behavioral rule (failure-mode precursor) plus a low-confidence liveness companion
 
-These two rules are **new**. They **load cleanly under `suricata -T`** (signature/syntax validation passes, confirmed 2026-11-21 against `jasonish/suricata:latest`), but are **not yet validated against captured traffic** — loadable is not the same as proven to fire on real frames, and both carry `validated no` in their metadata until a pcap confirms them. They are distinct from the repository's shipped, validated oracle chain:
+These two rules are **new**. They **load cleanly under `suricata -T`** (signature/syntax validation passes, confirmed 2026-11-21 against `jasonish/suricata:latest`), but are **not yet validated against captured traffic** — loadable is not the same as proven to fire on real frames, and both carry `validated no` in their metadata until a pcap confirms them. They are distinct from the privately validated oracle chain (rule bodies not committed here):
 
-- Shipped and validated (captured PoC traffic, cleartext h2c): SIDs `9007013`-`9007015`, the precise RST then WINDOW_UPDATE(0,1) then PING flowbits chain. Use those when you have the PoC pcap.
+- Validated against captured PoC traffic (cleartext h2c), rule bodies retained privately (not committed in this repo): SIDs `9007013`-`9007015`, the precise RST then WINDOW_UPDATE(0,1) then PING flowbits chain. Use those when you have the PoC pcap.
 - Below (this file): SID `9007016` behavioral precursor and SID `9007017` liveness corroboration, for live estates where you do not have the exact oracle frames. Treat them as tuning starting points, not as finished signatures. (SID `9007012` is intentionally left unused to avoid collision with the existing `9007010`-`9007015` block.)
 
 Both rules match raw HTTP/2 frame bytes, so they only work over **cleartext h2c** (port 80 upgrade or prior-knowledge). Over TLS the frames are encrypted and invisible to Suricata, exactly as the remote active differential fails over TLS. On a TLS-only estate these rules will never fire, and the on-host signals in Section B are your detection.
@@ -266,7 +266,7 @@ A GOAWAY (frame type `0x07`) from the server after the precursor is the **opposi
 2. Watch for the crash signature (Section B.1, primary): abnormal `exited on signal 6` with a glibc abort, ideally with an `ngx_http_v2_*` backtrace from a core (B.5).
 3. Corroborate escalation and blast radius: `NRestarts` / exitCode `134`/`139` (B.2, B.3), time-aligned `502` bursts (B.4).
 4. Rule out the look-alike: an `oom_kill` / signal 9 points at a different failure (B.5).
-5. If decrypted or cleartext h2c traffic is available, the precursor rule (C.1) and the shipped oracle chain (`9007013`-`9007015`) add a network view. Over TLS, rely on Section B.
+5. If decrypted or cleartext h2c traffic is available, the precursor rule (C.1) and the privately validated oracle chain (`9007013`-`9007015`) add a network view. Over TLS, rely on Section B.
 
 Honest outcome mapping:
 
