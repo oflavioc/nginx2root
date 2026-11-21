@@ -1,1 +1,0 @@
-101:101 644 0 /tmp/nginx2root-release-123007-vulnerable

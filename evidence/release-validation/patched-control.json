@@ -1,6 +1,0 @@
-{
-  "checked": true,
-  "container": "nginx2root-release-1319",
-  "marker_absent": true,
-  "detail": "Fresh nginx 1.31.9 control: exploit exited 1 after in-band HTTP/2 fingerprint matched no profile, before accounting stage; independent marker stat returned exit 1, no such file."
-}

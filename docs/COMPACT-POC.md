@@ -43,7 +43,7 @@ uv run python -I h2c_flow_control_test.py \
   --acknowledge-local-lab I-AUTHORIZE-LOCAL-LAB
 ```
 
-This expands the version coverage of the compact test only. It does not establish RCE compatibility on those versions. Full RCE is separately verified on 1.31.6 and 1.31.8 with Rapid7's matched profiles; 1.31.7 RCE remains unverified.
+This expands the version coverage of the compact test only. It does not establish RCE compatibility on those versions. The full RCE was reproduced here exactly once, on 1.31.8 (2026-11-21, auto-selected profile `golden-nginx-1.31.8-debian13-amd64`). Rapid7 documents matched profiles for both 1.31.6 and 1.31.8, but the executed RCE work in this repo is that single 1.31.8 run; 1.31.6 and 1.31.7 RCE were not run here.
 
 ## What the client does
 

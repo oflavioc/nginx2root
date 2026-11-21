@@ -53,14 +53,16 @@ Repeat the complete attempt against a fresh, unmodified nginx 1.31.9 target with
 
 ## Verified result
 
-On 18 November 2026, the complete upstream exploit against the isolated 1.31.8 target:
+On 21 November 2026, a single run of the complete upstream exploit against the isolated, researcher-owned nginx 1.31.8 target (driven from a `python:3.10` container on an AVX-512 host) auto-selected the `golden-nginx-1.31.8-debian13-amd64` profile and:
 
-- Sent 119.02 GiB of plaintext over 16 auxiliary connections in 166.04 seconds.
+- Sent approximately 119.02 GiB of plaintext over 16 auxiliary connections in roughly 190 seconds.
 - Captured a 14,393-byte memory disclosure.
-- Resolved heap, nginx, and libc addresses.
-- Completed controlled reclaim and dispatched a cleanup callback invoking `system(command)`.
-- Created `/tmp/rapid7-nginx-h2-proof-01`, independently recorded as UID/GID 101:101, mode 644.
+- Resolved ASLR bases H=0x594f9ac415c0, nginx=0x594f819ad840, libc=0x72978269a000, with an in-band libc `system` at 0x7297826ed090.
+- Completed controlled reclaim and dispatched a cleanup callback invoking `system(command)` via the `--cmd` touch.
+- Created `/tmp/pwn-realrun-01`, independently recorded as UID/GID 101:101, mode 644.
 
-The worker then logged a double free and exited on signal 6. The container remained running with zero restarts and no OOM kill. This is command execution as the nginx worker inside the container, not host root or container escape.
+The worker then logged `free(): double free detected in tcache 2`, and worker process 22 exited on signal 6 at 2026/11/21 15:29:37. This is a single-shot, worker-crashing primitive: command execution as the nginx worker inside the container, not host root or container escape. This was one genuine run on 21 November 2026, not a statistic and not a multi-run validation.
 
-The [archived marker](../evidence/cve-2026-123007/rapid7-rce-marker.txt) and [result note](../evidence/cve-2026-123007/RCE-CONFIRMED.md) preserve this evidence. The unified runner reads that archive without rerunning the exploit or claiming a fresh patched-control check.
+The full chain was exercised only against the researcher-owned 1.31.8 container. It was not run against a patched 1.31.9 target; the profile gate would reject a non-matching build, but no patched-control exploit run was performed here, so no patched-control timing is claimed.
+
+The [archived marker](../evidence/cve-2026-123007/rapid7-rce-marker.txt) and [result note](../evidence/cve-2026-123007/RCE-CONFIRMED.md) preserve this single genuine run. The unified runner reads that archive without rerunning the exploit.

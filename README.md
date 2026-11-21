@@ -1,6 +1,6 @@
 # nginx2root lab reproductions
 
-Censys Research's isolated-lab reproductions of the five nginx2root vulnerabilities. This repository contains a compact HTTP/2 accounting proof of concept, packet captures, independent command-execution evidence, and a guarded compatibility runner.
+Censys Research's isolated-lab reproductions of the five nginx2root vulnerabilities. This repository contains a compact HTTP/2 accounting proof of concept, packet captures, and a guarded compatibility runner.
 
 **Start here:** the [single-file compact PoC](h2c_flow_control_test.py) demonstrates the `CVE-2026-123007` accounting error on every release from nginx 1.30.0 through 1.31.8, with the patched 1.31.9 control over cleartext h2c. It is not an RCE exploit.
 
@@ -43,9 +43,9 @@ The retained evidence includes a **5.69 MB vulnerable capture** and a **1.41 MB 
 | --- | --- | --- | --- | --- |
 | 1.30.0–1.30.6 | Verified | Verified on 1.30.0 and 1.30.6 | h2c, one worker | Accounting error confirmed |
 | 1.31.0–1.31.5 | Verified | Verified on 1.31.0 and 1.31.5 | h2c, one worker | Accounting error confirmed |
-| 1.31.6 | Verified | Verified | h2c, one worker | Accounting error confirmed; full RCE separately verified |
+| 1.31.6 | Verified | Verified | h2c, one worker | Accounting error confirmed |
 | 1.31.7 | Verified | Verified | h2c, one worker | Accounting error confirmed; full RCE unverified |
-| 1.31.8 | Verified | Verified | h2c, one worker | Accounting error confirmed; full RCE separately verified |
+| 1.31.8 | Verified | Verified | h2c, one worker | Accounting error confirmed; full RCE reproduced once (2026-11-21) |
 | 1.31.9 | Rejects probe | Rejects probe | Patched control | No accounting proof |
 
 Additional native x86-64 coverage: one, two, and four workers; fresh, 40-request, and 200-request heap states; static full and Range responses; buffered upstream full, Range, chunked, and close-delimited responses. Unbuffered proxying is inconclusive because it leaves insufficient queued data.
@@ -56,7 +56,7 @@ See [worker/heap evidence](evidence/release-validation/worker-heap-matrix.md), [
 
 | CVE | Tested path | Current result |
 | --- | --- | --- |
-| `CVE-2026-123007` | HTTP/2 flow control | Rapid7's full RCE chain independently reproduced on matched native x86-64 AVX512 profiles for nginx 1.31.6 and 1.31.8. |
+| `CVE-2026-123007` | HTTP/2 flow control | Rapid7's full RCE chain reproduced once, on 2026-11-21, against an owned nginx 1.31.8 target (native x86-64 AVX-512). Not run on 1.31.6. |
 | `CVE-2026-123633` | HTTP/2 with upstream proxying | UAF and stock worker crash reproduced; no unified RCE adapter. |
 | `CVE-2026-123634` | Runtime DNS resolution with subrequests | ASAN UAF and custom-debug crashes; no stock-image crash or unified RCE adapter. |
 | `CVE-2026-121810` | HTTP/3 with upstream proxying | Not reproduced. |
@@ -66,20 +66,21 @@ A worker crash, sanitizer report, allocation reuse, or client dispatch message i
 
 ## Full RCE evidence
 
-Censys reproduced Rapid7's complete `CVE-2026-123007` exploit chain against an isolated nginx 1.31.8 target on native x86-64 AVX512 hardware. The run dispatched 119.02 GiB of plaintext over 16 auxiliary connections in 166.04 seconds, captured a 14,393-byte memory disclosure, resolved ASLR, reclaimed the overwritten pool, and dispatched a cleanup callback invoking `system(command)`.
+On 2026-11-21, Censys reproduced Rapid7's complete `CVE-2026-123007` exploit chain exactly once, against a disposable, isolated nginx 1.31.8 container we own, driven from a `python:3.10` container with the native streamer recompiled from source, on an AVX-512 host (Ryzen 9 7950X). The profile `golden-nginx-1.31.8-debian13-amd64` was auto-selected. This single run dispatched ~119.02 GiB of plaintext over 16 auxiliary connections in ~190 seconds, captured a 14,393-byte memory disclosure, and resolved ASLR (H=0x594f9ac415c0, nginx=0x594f819ad840, libc=0x72978269a000), recovering the in-band libc `system` at 0x7297826ed090. It then reclaimed the overwritten pool and dispatched a cleanup callback invoking `system(command)`.
 
-The harmless command was:
+The harmless command, passed via `--cmd`, was:
 
 ```sh
-touch /tmp/rapid7-nginx-h2-proof-01
+touch /tmp/pwn-realrun-01
 ```
 
-An independent check found the marker owned by UID/GID 101:101, proving command execution as the nginx worker. A worker then aborted on signal 6 after a double free. This was not host root, a kernel exploit, container escape, or a stable shell.
+An independent check found the marker `/tmp/pwn-realrun-01` owned by UID/GID 101:101 with mode 644, proving command execution as the nginx worker. The worker then crashed with `free(): double free detected in tcache 2`, and worker process 22 exited on signal 6 at 2026/11/21 15:29:37. This single-shot, worker-crashing primitive was not host root, a kernel exploit, container escape, or a stable shell.
+
+This was the only run. The chain was not run against the patched 1.31.9 build: the profile gate would reject a non-matching build, but no patched-control exploit run was performed.
 
 See:
 
-- [RCE evidence](evidence/cve-2026-123007/RCE-CONFIRMED.md)
-- [Fresh release validation](evidence/release-validation/VALIDATION.md)
+- [RCE evidence](evidence/cve-2026-123007/RCE-CONFIRMED.md) and [the marker record](evidence/cve-2026-123007/rapid7-rce-marker.txt), both documenting this single genuine run of 2026-11-21
 - [Attack-chain diagram](docs/CVE-2026-123007-ATTACK-CHAIN.md)
 - [Reproduction instructions](docs/REPRODUCTION.md)
 

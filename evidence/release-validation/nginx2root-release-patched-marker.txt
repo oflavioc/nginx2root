@@ -1,1 +1,0 @@
-stat: cannot statx '/tmp/rapid7-nginx-h2-release-patched': No such file or directory
